@@ -29,7 +29,7 @@
       'sources': [],
     },
   },
-  'esnode00':
+  'mongo00':
   {
     'mongodb':
     {
@@ -38,10 +38,10 @@
       'external_net_bindip': '{{ grains.fqdn_ip4[0] }}',
       'sources': 
       [{
-        'name': 'esnode00',
+        'name': 'mongo00',
         'master': 'true',
         'arbiter': 'false',
-        'fqdn': 'esnode00.alias454.local',
+        'fqdn': 'mongo00.alias454.local',
         'ip': '192.168.2.20',
         'mask': '/32',
         'port': '27017'

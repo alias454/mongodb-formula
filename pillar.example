@@ -43,24 +43,24 @@ mongodb:
           Cu9W+99K7sgD34HixkNlGkFVLuE8prlPuOIRlXaAdsReEBb9ISA8WSrKHss92jOR
           M92WTe16CB2kv8vc5WZQ/w==
       sources:                                          # List of sources to use in the replica set
-        - name: 'esnode00'                              # name of node
+        - name: 'mongo00'                               # name of node
           master: 'true'                                # Master node for deployment, will change after election
           arbiter: 'false'                              # Use this node as an arbiter
           ip: '192.168.2.20'                            # IP address for this node
           mask: '/32'                                   # Subnet Mask for this node
-          fqdn: 'esnode00.alias454.local'               # FQDN used in replica set creation can be an IP
+          fqdn: 'mongo00.alias454.local'                # FQDN used in replica set creation can be an IP
           port: '27017'                                 # Port used for mongodb on this node
-        - name: 'esnode01'
+        - name: 'mongo01'
           master: 'false'
           arbiter: 'false'
           ip: '192.168.2.19'
           mask: '/32'
-          fqdn: 'esnode01.alias454.local'
+          fqdn: 'mongo01.alias454.local'
           port: '27017'
-        - name: 'esnode02'
+        - name: 'mongo02'
           master: 'false'
           arbiter: 'false'
           ip: '192.168.2.21'
           mask: '/32'
-          fqdn: 'esnode02.alias454.local'
+          fqdn: 'mongo02.alias454.local'
           port: '27017'
