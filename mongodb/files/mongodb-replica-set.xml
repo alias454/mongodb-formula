@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <service>
+    <short>mongodb-replica-set</short>
+    <description>Open port to other mongodb servers for replication.</description>
+    <port protocol="tcp" port="27017"/>
+  </service>

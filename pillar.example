@@ -1,0 +1,66 @@
+# Set firewall status to Active or InActive for the main
+# firewall service. If you want to disable the firewall,
+# set this to 'InActive' and set the overide firewall
+# to Active for the individual applications
+firewall:
+  firewalld:
+    status: 'Active'
+    default_zone: 'internal'
+  input_source: [
+                  '192.168.2.0/24',
+                ]
+
+# Override host options
+# MongoDB docs https://docs.mongodb.com/manual/
+mongodb:
+  lookup:
+    admin_db:                      # admin db settings -- used if auth enabled
+      name: 'admin'                # The name of the user to manage
+      passwd: 'password'           # The password of the user to manage
+      user: 'admin'                # MongoDB user with sufficient privilege to create the user
+      password: 'password'         # Password for the admin user specified by the user parameter
+      database: 'admin'            # The database where the user will be created
+      authdb: 'admin'              # The database in which to authenticate
+    firewall:
+      firewalld:
+        status: 'Active'
+    mongodb:
+      restart_service_after_state_change: 'true'
+      use_security_auth: 'true'                         # Use authentication
+      security_auth: 'enabled'                          # Set auth enabled or disabled
+      use_external_net: 'false'                         # Use a secondary ip interface
+      external_net_bindip: '{{ grains.fqdn_ip4[0] }}'   # Use grain to pick ip associated with fqdn
+      local_net_bindip: '127.0.0.1'
+      use_replica_set: 'false'                          # Enable replica set states
+      use_keyfile: 'false'                              # Enable basic key auth for replica sets
+      replication_replsetname: 'rs0'                    # Name of replica set
+      replication_oplogsizemb: '2048'                   # Replicaset log file size in MB
+      keyfile_contents: |                               # Random key using openssl rand -base64 6-1024
+          88jRMqGrPjodrPcecSbSVdnqY8bmijul7BK/wLXI40d3YD6vbLpx+jEw3cxJsLKG
+          FfqVQU9mXdGzEcAtd+uOASOkEiXQy9vAVcFQ08ze5FHgz/p05dlfv6Xb2ETHneoC
+          V9oNLMMpWwvnePTF/a0iiO36JqZowgaVPQmMho2uJcASVEFwx424Aj+6jei+ZXMH
+          Hsq+QFPqBf5TOCzzzLfyR8avjc+T1ZnGGtOcQWPP3qK2gx0kLfsM0oFHkD4FG6mi
+          Cu9W+99K7sgD34HixkNlGkFVLuE8prlPuOIRlXaAdsReEBb9ISA8WSrKHss92jOR
+          M92WTe16CB2kv8vc5WZQ/w==
+      sources:                                          # List of sources to use in the replica set
+        - name: 'esnode00'                              # name of node
+          master: 'true'                                # Master node for deployment, will change after election
+          arbiter: 'false'                              # Use this node as an arbiter
+          ip: '192.168.2.20'                            # IP address for this node
+          mask: '/32'                                   # Subnet Mask for this node
+          fqdn: 'esnode00.alias454.local'               # FQDN used in replica set creation can be an IP
+          port: '27017'                                 # Port used for mongodb on this node
+        - name: 'esnode01'
+          master: 'false'
+          arbiter: 'false'
+          ip: '192.168.2.19'
+          mask: '/32'
+          fqdn: 'esnode01.alias454.local'
+          port: '27017'
+        - name: 'esnode02'
+          master: 'false'
+          arbiter: 'false'
+          ip: '192.168.2.21'
+          mask: '/32'
+          fqdn: 'esnode02.alias454.local'
+          port: '27017'

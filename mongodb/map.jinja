@@ -1,0 +1,67 @@
+# Setttings based on the server name
+# Defaults are geared towards a single instance with auth.
+# If you are going to run a cluster then turn on features
+# as needed using pillars or edit here.
+{% set default_config = salt['grains.filter_by']({
+  'default':
+  {
+    'mongodb':
+    {
+      'is_master': 'false',
+      'is_arbiter': 'false',
+      'restart_service_after_state_change': 'true',
+      'systemlog_destination': 'file',
+      'systemlog_logappend': 'true',
+      'systemlog_path': '/var/log/mongodb/mongod.log',
+      'storage_dbpath': '/var/lib/mongo',
+      'storage_journal_enabled': 'true',
+      'use_security_auth': 'true',
+      'security_auth': 'enabled',
+      'use_external_net': 'false',
+      'external_net_bindip': '',
+      'local_net_bindip': '127.0.0.1',
+      'net_port': '27017',
+      'use_replica_set': 'false',
+      'security_keyfile': '/etc/mongodb_key',
+      'replication_replsetname': 'rs0',
+      'replication_oplogsizemb': '2048',
+      'use_keyfile': 'false',
+      'sources': [],
+    },
+  },
+  'esnode00':
+  {
+    'mongodb':
+    {
+      'is_master': 'true',
+      'use_external_net': 'false',
+      'external_net_bindip': '{{ grains.fqdn_ip4[0] }}',
+      'sources': 
+      [{
+        'name': 'esnode00',
+        'master': 'true',
+        'arbiter': 'false',
+        'fqdn': 'esnode00.alias454.local',
+        'ip': '192.168.2.20',
+        'mask': '/32',
+        'port': '27017'
+      },]
+    },
+  },
+}, grain='host', base='default') %}
+
+# Configure firewall settings specific for this instance
+{% set firewall = {
+  'firewall':
+  {
+    'firewalld':
+    {
+      'status': salt['pillar.get']('firewall:firewalld:status', 'InActive'),
+    },
+  },
+} %}
+
+{% do default_config.update(firewall) %}
+
+# Merge the default settings with pillar data
+{% set host_lookup = salt['pillar.get']('mongodb:lookup', default=default_config, merge=True) %}
