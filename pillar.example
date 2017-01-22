@@ -6,21 +6,18 @@ firewall:
   firewalld:
     status: 'Active'
     default_zone: 'internal'
-  input_source: [
-                  '192.168.2.0/24',
-                ]
 
 # Override host options
 # MongoDB docs https://docs.mongodb.com/manual/
 mongodb:
   lookup:
-    admin_db:                      # admin db settings -- used if auth enabled
-      name: 'admin'                # The name of the user to manage
-      passwd: 'password'           # The password of the user to manage
-      user: 'admin'                # MongoDB user with sufficient privilege to create the user
-      password: 'password'         # Password for the admin user specified by the user parameter
-      database: 'admin'            # The database where the user will be created
-      authdb: 'admin'              # The database in which to authenticate
+    managed_dbs:
+      - database: 'admin'            # admin db settings -- used if auth enabled
+        name: 'admin'                # The name of the user to manage
+        passwd: 'password'           # The password of the user to manage
+        user: 'admin'                # MongoDB user with sufficient privilege to create the user
+        password: 'password'         # Password for the admin user specified by the user parameter
+        authdb: 'admin'              # The database in which to authenticate
     firewall:
       firewalld:
         status: 'Active'

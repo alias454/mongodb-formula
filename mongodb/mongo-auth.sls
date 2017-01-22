@@ -17,27 +17,34 @@
 {% if config.mongodb.use_security_auth == 'true' %}
 {% if config.mongodb.security_auth == 'enabled' %}
 
-{% set name = salt['pillar.get']('mongodb:lookup:admin_db:name') %}
-{% set passwd = salt['pillar.get']('mongodb:lookup:admin_db:passwd') %}
-{% set user = salt['pillar.get']('mongodb:lookup:admin_db:user') %}
-{% set password = salt['pillar.get']('mongodb:lookup:admin_db:password') %}
-{% set database = salt['pillar.get']('mongodb:lookup:admin_db:database') %}
-{% set authdb = salt['pillar.get']('mongodb:lookup:admin_db:authdb') %}
 {% set defined_role = 'executeEval' %}
+{% for db in salt['pillar.get']('mongodb:lookup:managed_dbs') %}
+    {% set name = db.name %}
+    {% set passwd = db.passwd %}
+    {% set user = db.user %}
+    {% set password = db.password %}
+    {% set database = db.database %}
+    {% set authdb = db.authdb %}
 
-mongodb-create-admin-account:
+mongodb-create-{{ name }}-account:
   module.run:
     - name: mongodb.user_create
     - m_name: {{ name }}
     - passwd: {{ passwd }}
     - database: {{ database }}
+  {% if database != 'admin' %}
+    - user: {{ user }}
+    - password: {{ password }}
     - authdb: {{ authdb }}
+  {% endif %}
     - host: {{ config.mongodb.local_net_bindip }}
     - port: {{ config.mongodb.net_port }}
     - require:
       - pip: pip-package-install-pymongo
       - service: service-mongod
     - unless: mongo -u {{ name }} -p {{ passwd }} --quiet --eval "db.getUser('{{ name }}')" {{ database }} |grep user
+
+{% if database == 'admin' %}
 
 comand-mongodb-create-{{ defined_role }}-role:
   cmd.run:
@@ -58,6 +65,9 @@ comand-mongodb-grant-{{ defined_role }}-role-to-admin:
     - require:
       - cmd: comand-mongodb-create-{{ defined_role }}-role
     - unless: mongo -u {{ name }} -p {{ passwd }} --quiet --eval "db.getUser('{{ name }}')" {{ database }} |grep {{ defined_role }}
+
+{% endif %} # check db.database
+{% endfor %} # end user loop
 
 {% endif %} # security_auth
 {% endif %} # use_security_auth

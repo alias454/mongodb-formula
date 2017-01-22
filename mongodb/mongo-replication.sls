@@ -4,14 +4,15 @@
 {% if config.mongodb.use_replica_set == 'true' %}
 {% if config.mongodb.is_master == 'true' %}
 
-{% set replset_config = {'_id': config.mongodb.replication_replsetname, 'members': []} %}
-{% set name = salt['pillar.get']('mongodb:lookup:admin_db:name') %}
-{% set passwd = salt['pillar.get']('mongodb:lookup:admin_db:passwd') %}
-{% set user = salt['pillar.get']('mongodb:lookup:admin_db:user') %}
-{% set password = salt['pillar.get']('mongodb:lookup:admin_db:password') %}
-{% set database = salt['pillar.get']('mongodb:lookup:admin_db:database') %}
-{% set authdb = salt['pillar.get']('mongodb:lookup:admin_db:authdb') %}
 {% set server = [] %}
+{% for db in salt['pillar.get']('mongodb:lookup:managed_dbs') %}
+{% if db.name == 'admin' %}
+    {% set name = db.name %}
+    {% set passwd = db.passwd %}
+    {% set user = db.user %}
+    {% set password = db.password %}
+    {% set database = db.database %}
+    {% set authdb = db.authdb %}
 
 {% for node in config.mongodb.sources %}
 {% do server.append(node.name) %}
@@ -54,7 +55,7 @@ mongodb-reconfig-{{ node.name }}-replset:
   cmd.run:
     - name: >-
         mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval
-        "cfg = rs.conf(); cfg.members[0].host = '{{ node.fqdn }}:{{ node.port }}'; rs.reconfig(cfg);"
+        "cfg = rs.conf(); cfg.members[0].priority = 2; cfg.members[0].host = '{{ node.fqdn }}:{{ node.port }}'; rs.reconfig(cfg);"
     - shell: /bin/bash
     - output_loglevel: quiet
     - require:
@@ -95,6 +96,9 @@ mongodb-add-{{ node.name }}-replset:
 
 {% endif %}
 {% endfor %}
+
+{% endif %} # check db.database
+{% endfor %} # end user loop
 
 {% endif %}
 {% endif %}
