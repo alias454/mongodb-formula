@@ -1,5 +1,7 @@
 {% from "mongodb/map.jinja" import host_lookup as config with context %}
 
+# Make sure the service is running and restart the service unless
+# restart_service_after_state_change is false
 service-mongod:
   service.running:
     - name: mongod

@@ -1,3 +1,4 @@
+# Install mongodb from a package
 package-install-mongodb:
   pkg.installed:
     - pkgs:
@@ -9,8 +10,7 @@ package-install-mongodb:
     - require:
       - file: /etc/yum.repos.d/MongoDB-3.4.repo
 
-# Upgrade older versions of pip
-# pip state functions need an importable pip module
+# Install pip
 pip-install-mongodb:
   pkg.installed:
     - pkgs:
@@ -19,6 +19,7 @@ pip-install-mongodb:
     - require:
       - pkg: package-install-mongodb
 
+# Upgrade older versions of pip
 pip-upgrade-mongodb:
   cmd.run:
     - name: pip install --upgrade pip

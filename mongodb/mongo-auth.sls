@@ -26,6 +26,10 @@
     {% set database = db.database %}
     {% set authdb = db.authdb %}
 
+# If creating the first user there won't be any
+# authentication available. If trying to create the
+# admin account on the admin DB we assume it is
+# the first pass and don't use user,password,authdb
 mongodb-create-{{ name }}-account:
   module.run:
     - name: mongodb.user_create
@@ -44,8 +48,13 @@ mongodb-create-{{ name }}-account:
       - service: service-mongod
     - unless: mongo -u {{ name }} -p {{ passwd }} --quiet --eval "db.getUser('{{ name }}')" {{ database }} |grep user
 
+# Check for admin DB. The admin account has to exist
+# or states will fail. Adding these roles allow
+# using mongo salt modules to perform actions 
+# on DBs otherwise gets an eval() error. 
 {% if database == 'admin' %}
 
+# Create the defined role
 comand-mongodb-create-{{ defined_role }}-role:
   cmd.run:
     - name: >-
@@ -56,6 +65,7 @@ comand-mongodb-create-{{ defined_role }}-role:
       - module: mongodb-create-admin-account 
     - unless: mongo -u {{ name }} -p {{ passwd }} --quiet --eval "db.getRoles()" {{ database }} |grep {{ defined_role }} 
 
+# Grant role to user
 comand-mongodb-grant-{{ defined_role }}-role-to-admin:
   cmd.run:
     - name: >-
@@ -66,8 +76,8 @@ comand-mongodb-grant-{{ defined_role }}-role-to-admin:
       - cmd: comand-mongodb-create-{{ defined_role }}-role
     - unless: mongo -u {{ name }} -p {{ passwd }} --quiet --eval "db.getUser('{{ name }}')" {{ database }} |grep {{ defined_role }}
 
-{% endif %} # check db.database
-{% endfor %} # end user loop
+{% endif %} # check database
+{% endfor %} # end managed_dbs loop
 
 {% endif %} # security_auth
 {% endif %} # use_security_auth

@@ -21,6 +21,8 @@
 # from https://github.com/mitodl/mongodb-formula
 {% if node.master == 'true' %}
 
+# Initiate the replica set with default settings
+# on the defined master
 mongodb-initiate-{{ node.name }}-replset:
   cmd.run:
     - name: >-
@@ -34,6 +36,7 @@ mongodb-initiate-{{ node.name }}-replset:
       - service: service-mongod
     - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
 
+# Run until replica set has initialized
 mongodb-status-{{ node.name }}-replset:
   cmd.run:
     - name: |
@@ -51,6 +54,9 @@ mongodb-status-{{ node.name }}-replset:
       - cmd: mongodb-initiate-{{ node.name }}-replset 
     - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
 
+# After the replica set has been initialized
+# rconfigure the cluster so our defined node 
+# has a higher priority and set the fqdn
 mongodb-reconfig-{{ node.name }}-replset:
   cmd.run:
     - name: >-
@@ -64,6 +70,7 @@ mongodb-reconfig-{{ node.name }}-replset:
 
 {% elif node.arbiter == 'true' %}
 
+# If the node is an arbiter 
 mongodb-add-{{ node.name }}-replset:
   cmd.run:
     - name: >-
@@ -80,6 +87,7 @@ mongodb-add-{{ node.name }}-replset:
 
 {% else %}
 
+# Otherwise it is a full member of the replica set
 mongodb-add-{{ node.name }}-replset:
   cmd.run:
     - name: >-

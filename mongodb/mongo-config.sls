@@ -1,5 +1,6 @@
 {% from "mongodb/map.jinja" import host_lookup as config with context %}
 
+# Create mongodb config file using template
 /etc/mongod.conf:
   file.managed:
     - source: salt://mongodb/files/mongod.conf
