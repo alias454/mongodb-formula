@@ -2,13 +2,13 @@
 package-install-mongodb:
   pkg.installed:
     - pkgs:
-      - epel-release   # Base install
-      - policycoreutils-python   # Base install
+      - epel-release 
+      - policycoreutils-python
       - numactl
       - mongodb-org
     - refresh: True
     - require:
-      - file: /etc/yum.repos.d/MongoDB-3.4.repo
+      - pkgrepo: mongodb_repo
 
 # Install pip
 pip-install-mongodb:

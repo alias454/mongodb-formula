@@ -66,6 +66,7 @@ mongodb-reconfig-{{ node.name }}-replset:
     - output_loglevel: quiet
     - require:
       - module: mongodb-create-admin-account 
+      - cmd: comand-mongodb-grant-executeEval-role-to-admin 
     - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
 
 {% elif node.arbiter == 'true' %}
@@ -80,6 +81,7 @@ mongodb-add-{{ node.name }}-replset:
     - output_loglevel: quiet
     - require:
       - module: mongodb-create-admin-account 
+      - cmd: comand-mongodb-grant-executeEval-role-to-admin 
       - pip: pip-package-install-pymongo
       - file: {{ config.mongodb.security_keyfile  }}
       - service: service-mongod
@@ -97,6 +99,7 @@ mongodb-add-{{ node.name }}-replset:
     - output_loglevel: quiet
     - require:
       - module: mongodb-create-admin-account 
+      - cmd: comand-mongodb-grant-executeEval-role-to-admin 
       - pip: pip-package-install-pymongo
       - file: {{ config.mongodb.security_keyfile  }}
       - service: service-mongod

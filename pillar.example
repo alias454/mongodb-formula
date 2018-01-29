@@ -23,6 +23,9 @@ mongodb:
         status: 'Active'
     mongodb:
       restart_service_after_state_change: 'true'
+      repo_version: '3.6'
+      repo_baseurl: 'https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.6/x86_64/'
+      repo_gpgkey: 'https://www.mongodb.org/static/pgp/server-3.6.asc'
       use_security_auth: 'true'                         # Use authentication
       security_auth: 'enabled'                          # Set auth enabled or disabled
       use_external_net: 'false'                         # Use a secondary ip interface

@@ -16,7 +16,14 @@ command-rebuild-mongodb-grub-cfg:
 # Set resource limits for the mongo user
 /etc/security/limits.d/90-mongodb.conf:
   file.managed:
-    - source: salt://mongodb/files/90-mongodb.conf
     - user: root
     - group: root
     - mode: '0644'
+    - contents: |
+        # Managed by Salt do not edit
+        # Set resource limits for mongod user
+        mongod soft nofile 64000
+        mongod hard nofile 64000
+        mongod soft nproc 32000
+        mongod hard nproc 32000
+

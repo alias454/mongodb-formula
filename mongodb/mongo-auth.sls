@@ -43,6 +43,10 @@ mongodb-create-{{ name }}-account:
   {% endif %}
     - host: {{ config.mongodb.local_net_bindip }}
     - port: {{ config.mongodb.net_port }}
+  {% if name == 'admin' %}
+    - roles:
+      - root
+  {% endif %}
     - require:
       - pip: pip-package-install-pymongo
       - service: service-mongod
