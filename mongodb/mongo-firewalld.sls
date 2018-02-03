@@ -23,6 +23,11 @@ command-restorecon-mongodb-/etc/firewalld/services:
     - unless:
       - ls -Z /etc/firewalld/services/mongodb-replica-set.xml| grep firewalld_etc_rw_t
 
+# Reload firewalld so mongo rules take effect
+command-mongodb-firewalld-reload:
+  cmd.run:
+    - name: firewall-cmd --reload
+
 # Loop through list of sources and create firewall rules
 {% for node in config.mongodb.sources %}
 
@@ -30,14 +35,8 @@ command-restorecon-mongodb-/etc/firewalld/services:
 command-add-perm-rich-rule-mongodb-replica-set-{{ node.name }}:
   cmd.run:
     - name: firewall-cmd --zone=internal --add-rich-rule="rule family="ipv4" source address="{{ node.ip }}{{ node.mask }}" service name="mongodb-replica-set" accept" --permanent
-    - require:
-      - cmd: command-restorecon-mongodb-/etc/firewalld/services
-    - unless: firewall-cmd --zone=internal --list-all |grep {{ node.ip }}{{ node.mask }} |grep mongodb-replica-set
-
-# Add rule that will take effect immediately
-command-add-rich-rule-mongodb-replica-set-{{ node.name }}:
-  cmd.run:
-    - name: firewall-cmd --zone=internal --add-rich-rule="rule family="ipv4" source address="{{ node.ip }}{{ node.mask }}" service name="mongodb-replica-set" accept"
+    - onchanges_in:
+      - cmd: command-mongodb-firewalld-reload
     - require:
       - cmd: command-restorecon-mongodb-/etc/firewalld/services
     - unless: firewall-cmd --zone=internal --list-all |grep {{ node.ip }}{{ node.mask }} |grep mongodb-replica-set
