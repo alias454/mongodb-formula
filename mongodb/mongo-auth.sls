@@ -46,6 +46,9 @@ mongodb-create-{{ name }}-account:
   {% if name == 'admin' %}
     - roles:
       - root
+  {% else %}
+    - roles:
+      - dbOwner
   {% endif %}
     - require:
       - pip: pip-package-install-pymongo
