@@ -1,10 +1,9 @@
+{% from "mongodb/map.jinja" import host_lookup as config with context %}
+
 # Install mongodb from a package
 package-install-mongodb:
   pkg.installed:
     - pkgs:
-      - epel-release 
-      - policycoreutils-python
-      - numactl
       - mongodb-org
     - refresh: True
     - require:
@@ -14,7 +13,7 @@ package-install-mongodb:
 pip-install-mongodb:
   pkg.installed:
     - pkgs:
-      - python2-pip
+      - {{ config.package.python_pip_pkg }}
     - refresh: True
     - require:
       - pkg: package-install-mongodb

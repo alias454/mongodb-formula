@@ -27,7 +27,7 @@ mongodb-initiate-{{ node.name }}-replset:
   cmd.run:
     - name: >-
         mongo {{ database }} --quiet --eval
-        "rs.initiate()"
+        'rs.initiate({_id: "{{ config.mongodb.replication_replsetname }}", members: [{"_id":0, "host":"{{ node.fqdn }}:{{ node.port }}"}]})'
     - shell: /bin/bash
     - output_loglevel: quiet
     - require:
@@ -55,7 +55,7 @@ mongodb-status-{{ node.name }}-replset:
     - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
 
 # After the replica set has been initialized
-# rconfigure the cluster so our defined node 
+# reconfigure the cluster so our defined node 
 # has a higher priority and set the fqdn
 mongodb-reconfig-{{ node.name }}-replset:
   cmd.run:

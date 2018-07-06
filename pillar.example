@@ -18,19 +18,38 @@ mongodb:
         user: 'admin'                # MongoDB user with sufficient privilege to create the user
         password: 'password'         # Password for the admin user specified by the user parameter
         authdb: 'admin'              # The database in which to authenticate
+      #- database: 'graylog'         # Example DB to create
+      #  name: 'gluser'
+      #  passwd: 'password'
+      #  user: 'admin'
+      #  password: 'password'
+      #  authdb: 'admin'
     firewall:
       firewalld:
         status: 'Active'
-    mongodb:
-      restart_service_after_state_change: 'true'
+    package:
+    {% if grains['os_family'] == 'RedHat' %}
       repo_version: '3.6'
       repo_baseurl: 'https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.6/x86_64/'
       repo_gpgkey: 'https://www.mongodb.org/static/pgp/server-3.6.asc'
+    {% elif grains['os_family'] == 'Debian' %}
+      repo_version: '3.6'
+      repo_baseurl: 'deb http://repo.mongodb.org/apt/debian {{ grains.oscodename }}/mongodb-org/3.6 main'
+      repo_keyserver: 'keyserver.ubuntu.com'
+      repo_key: '2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5'
+    {% endif %}
+    mongodb:
+    {% if grains['os_family'] == 'RedHat' %}
+      storage_dbpath: '/var/lib/mongo'                 # Define default location for mongo DB path on RHEL systems
+    {% elif grains['os_family'] == 'Debian' %}
+      storage_dbpath: '/var/lib/mongodb'               # Define default location for mongo DB path on Debian systems
+    {% endif %}
+      restart_service_after_state_change: 'true'
       use_security_auth: 'true'                         # Use authentication
       security_auth: 'enabled'                          # Set auth enabled or disabled
       use_external_net: 'false'                         # Use a secondary ip interface
-      external_net_bindip: '{{ grains.fqdn_ip4[0] }}'   # Use grain to pick ip associated with fqdn
-      local_net_bindip: '127.0.0.1'
+      external_net_bindip: '0.0.0.0'                    # Ex. '{{ grains.ipv4[1] }}, 127.0.0.1' or '0.0.0.0' to listen on all interfaces
+      local_net_bindip: '127.0.0.1'                     # If external_net_bindip is set only used for local db creation
       use_replica_set: 'false'                          # Enable replica set states
       use_keyfile: 'false'                              # Enable basic key auth for replica sets
       replication_replsetname: 'rs0'                    # Name of replica set

@@ -6,11 +6,10 @@ service-mongod:
   service.running:
     - name: mongod
     - enable: True
-    - init_delay: 3
+    - init_delay: 5
     - require:
       - pkg: package-install-mongodb
-      - cmd: command-mongodb-tcp-27017-port
-{% if config.mongodb.restart_service_after_state_change == 'true' %}
+  {% if config.mongodb.restart_service_after_state_change == 'true' %}
     - watch:
       - file: /etc/mongod.conf
-{% endif %}
+  {% endif %}

@@ -2,7 +2,7 @@
 mongodb-formula
 ================
 
-A saltstack formula to manage mongodb on RHEL based systems.
+A saltstack formula to manage mongodb on RHEL and Debian based systems.
 
 .. note::
 
@@ -19,9 +19,13 @@ Available states
 ------------
 Manage repo file on RHEL/CentOS 7 systems.
 
+``mongo-prereqs``
+------------
+Install additional prerequisite packages
+
 ``mongo-package``
 ------------
-Install mongodb and additional prerequisite packages
+Install mongodb pacakges for RHEL and Debian based distros
 
 ``mongo-config``
 ------------
@@ -40,9 +44,14 @@ Apply kernal tweaks and system tuning options
 Optionally setup firewalld rules for mongodb replication and disable iptables
 Requires the firewall-formula or another method of managing the firewalld service
 
+``mongo-iptables``
+------------
+Optionally setup iptables rules for mongodb replication and disable firewalld
+Requires the firewall-formula or another method of managing the firewall service
+
 ``mongo-service``
 ------------
-Sets up the mongodb service and makes sure it is running on RHEL/CentOS 7 systems.
+Sets up the mongodb service and makes sure it is running on RHEL/CentOS 7 and Debian systems.
 
 ``mongo-replication``
 ------------
