@@ -9,11 +9,21 @@
     - group: root
     - mode: '0644'
 
+# Create mongodb folder if not exists
 {{ config.mongodb.process_pidfilepath }}:
   file.directory:
     - owner: {{ config.package.mongo_user }}
     - group: {{ config.package.mongo_group }}
     - mode: 0775
+
+# Add config to allow systemd to auto create mongodb folder
+/usr/lib/tmpfiles.d/mongodb.conf:
+  file.managed:
+    - contents: |
+        d    {{ config.mongodb.process_pidfilepath }}   0755 {{ config.package.mongo_user }} {{ config.package.mongo_group }} - -
+    - user: root
+    - group: root
+    - mode: '0644'
 
 # Setup replica set keyfile if replication == true
 {% if config.mongodb.use_keyfile == 'true' %}
