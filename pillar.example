@@ -29,14 +29,14 @@ mongodb:
         status: 'Active'
     package:
     {% if grains['os_family'] == 'RedHat' %}
-      repo_version: '3.6'
-      repo_baseurl: 'https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.6/x86_64/'
-      repo_gpgkey: 'https://www.mongodb.org/static/pgp/server-3.6.asc'
+      repo_version: '4.0'
+      repo_baseurl: 'https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.0/x86_64/'
+      repo_gpgkey: 'https://www.mongodb.org/static/pgp/server-4.0.asc'
     {% elif grains['os_family'] == 'Debian' %}
-      repo_version: '3.6'
-      repo_baseurl: 'deb http://repo.mongodb.org/apt/debian {{ grains.oscodename }}/mongodb-org/3.6 main'
+      repo_version: '4.0'
+      repo_baseurl: 'deb http://repo.mongodb.org/apt/debian {{ grains.oscodename }}/mongodb-org/4.0 main'
       repo_keyserver: 'keyserver.ubuntu.com'
-      repo_key: '2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5'
+      repo_key: '9DA31620334BD75D9DCB49F368818C72E52529D4'
     {% endif %}
     mongodb:
     {% if grains['os_family'] == 'RedHat' %}
