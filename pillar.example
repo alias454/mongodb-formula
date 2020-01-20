@@ -11,19 +11,13 @@ firewall:
 # MongoDB docs https://docs.mongodb.com/manual/
 mongodb:
   lookup:
+    admin_user: 'admin'              # The name of the admin user used if use_security_auth is true
+    admin_passwd: 'password'         # The password of the admin user
+    database: 'admin'                # The database where the user will be created
     managed_dbs:
-      - database: 'admin'            # admin db settings -- used if auth enabled
-        name: 'admin'                # The name of the user to manage
-        passwd: 'password'           # The password of the user to manage
-        user: 'admin'                # MongoDB user with sufficient privilege to create the user
-        password: 'password'         # Password for the admin user specified by the user parameter
-        authdb: 'admin'              # The database in which to authenticate
-      #- database: 'graylog'         # Example DB to create
-      #  name: 'gluser'
-      #  passwd: 'password'
-      #  user: 'admin'
-      #  password: 'password'
-      #  authdb: 'admin'
+      #- database: 'graylog'          # The database where the user will be created
+      #  user: 'gluser'               # The name of the user to manage
+      #  passwd: 'password'           # The password of the user to manage
     firewall:
       firewalld:
         status: 'Active'
