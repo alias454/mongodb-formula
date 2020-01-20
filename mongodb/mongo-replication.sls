@@ -4,16 +4,13 @@
 {% if config.mongodb.use_replica_set == 'true' %}
 {% if config.mongodb.is_master == 'true' %}
 
-{% set server = [] %}
-{% for db in salt['pillar.get']('mongodb:lookup:managed_dbs') %}
-{% if db.name == 'admin' %}
-    {% set name = db.name %}
-    {% set passwd = db.passwd %}
-    {% set user = db.user %}
-    {% set password = db.password %}
-    {% set database = db.database %}
-    {% set authdb = db.authdb %}
+# The admin account has to exist or states will fail.
+{% set database = 'admin' %}
+{% set admin_user = salt['pillar.get']('mongodb:lookup:admin_user') %}
+{% set admin_passwd = salt['pillar.get']('mongodb:lookup:admin_passwd') %}
 
+# Iterate through list of nodes and add them to replica set
+{% set server = [] %}
 {% for node in config.mongodb.sources %}
 {% do server.append(node.name) %}
 
@@ -31,10 +28,9 @@ mongodb-initiate-{{ node.name }}-replset:
     - shell: /bin/bash
     - output_loglevel: quiet
     - require:
-      - pip: pip-package-install-pymongo
       - file: {{ config.mongodb.security_keyfile  }}
       - service: service-mongod
-    - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
+    - unless: mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
 
 # Run until replica set has initialized
 mongodb-status-{{ node.name }}-replset:
@@ -49,43 +45,42 @@ mongodb-status-{{ node.name }}-replset:
     - shell: /bin/bash
     - output_loglevel: quiet
     - require_in:
-      - module: mongodb-create-admin-account 
+      - cmd: mongodb-create-admin-account
     - require:
-      - cmd: mongodb-initiate-{{ node.name }}-replset 
-    - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
+      - cmd: mongodb-initiate-{{ node.name }}-replset
+    - unless: mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
 
 # After the replica set has been initialized
-# reconfigure the cluster so our defined node 
+# reconfigure the cluster so our defined node
 # has a higher priority and set the fqdn
 mongodb-reconfig-{{ node.name }}-replset:
   cmd.run:
     - name: >-
-        mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval
+        mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval
         "cfg = rs.conf(); cfg.members[0].priority = 2; cfg.members[0].host = '{{ node.fqdn }}:{{ node.port }}'; rs.reconfig(cfg);"
     - shell: /bin/bash
     - output_loglevel: quiet
     - require:
-      - module: mongodb-create-admin-account 
-      - cmd: comand-mongodb-grant-executeEval-role-to-admin 
-    - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }} 
+      - cmd: mongodb-create-admin-account
+      - cmd: comand-mongodb-grant-executeEval-role-to-admin
+    - unless: mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
 
 {% elif node.arbiter == 'true' %}
 
-# If the node is an arbiter 
+# If the node is an arbiter
 mongodb-add-{{ node.name }}-replset:
   cmd.run:
     - name: >-
-        mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval
+        mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval
         "rs.add('{{ node.fqdn }}:{{ node.port }}, true')"
     - shell: /bin/bash
     - output_loglevel: quiet
     - require:
-      - module: mongodb-create-admin-account 
-      - cmd: comand-mongodb-grant-executeEval-role-to-admin 
-      - pip: pip-package-install-pymongo
+      - cmd: mongodb-create-admin-account
+      - cmd: comand-mongodb-grant-executeEval-role-to-admin
       - file: {{ config.mongodb.security_keyfile  }}
       - service: service-mongod
-    - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
+    - unless: mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
 
 {% else %}
 
@@ -93,23 +88,19 @@ mongodb-add-{{ node.name }}-replset:
 mongodb-add-{{ node.name }}-replset:
   cmd.run:
     - name: >-
-        mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval
+        mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval
         "rs.add('{{ node.fqdn }}:{{ node.port }}')"
     - shell: /bin/bash
     - output_loglevel: quiet
     - require:
-      - module: mongodb-create-admin-account 
-      - cmd: comand-mongodb-grant-executeEval-role-to-admin 
-      - pip: pip-package-install-pymongo
+      - cmd: mongodb-create-admin-account
+      - cmd: comand-mongodb-grant-executeEval-role-to-admin
       - file: {{ config.mongodb.security_keyfile  }}
       - service: service-mongod
-    - unless: mongo {{ database }} -u {{ name }} -p {{ passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
+    - unless: mongo {{ database }} -u {{ admin_user }} -p {{ admin_passwd }} --quiet --eval "rs.status()" |grep {{ node.fqdn }}:{{ node.port }}
 
 {% endif %}
 {% endfor %}
-
-{% endif %} # check db.database
-{% endfor %} # end user loop
 
 {% endif %}
 {% endif %}
