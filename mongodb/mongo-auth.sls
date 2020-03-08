@@ -9,7 +9,7 @@
     {% set run_states = 'true' %}
   {% endif %}
 {% else %}
-{% set run_states = 'false' %}
+{% set run_states = 'true' %}
 {% endif %}
 
 # Setup default admin user if auth == true
